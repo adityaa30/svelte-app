@@ -1,20 +1,50 @@
 <script>
   import { onMount } from "svelte";
-  import { getAllQuotes } from "../server/index.js";
+  import { getAllQuotes, deleteQuote } from "../server/index.js";
+
+  import QuoteForm from "./QuoteForm.svelte";
 
   let quotes = [];
+  let editingQuote = {
+    author: "",
+    text: "",
+    id: null,
+    tags: []
+  };
 
   onMount(async () => {
     quotes = await getAllQuotes();
   });
 
-  const editQuote = quote => {
-    console.log(`Editing ${quote}`);
-  };
+  function _editQuote(quote) {
+    editingQuote = quote;
 
-  const deleteQuote = quote => {
-    console.log(`Deleting ${quote.id}`);
-  };
+    // Scroll to top
+    document.body.scrollTop = 0; // For Safari
+    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+  }
+
+  async function _deleteQuote(id) {
+    if (confirm("Sure to delete this quote?")) {
+      const response = await deleteQuote(id);
+      console.log(response);
+
+      quotes = await getAllQuotes();
+    }
+  }
+
+  function addQuote({ detail: quote }) {
+    // Assing new value to re-render
+    quotes = [quote, ...quotes];
+  }
+
+  function updateQuote({ detail: quote }) {
+    let idx = quotes.findIndex(val => {
+      return val.id === quote.id;
+    });
+
+    quotes[idx] = quote;
+  }
 </script>
 
 <style>
@@ -30,55 +60,48 @@
 
   .quotes-container {
     margin: 10px 0;
+    word-break: keep-all;
   }
 
   .quotes-container > .quote-tag {
     border-color: #17202a90;
-    border-style: solid;
-    border-width: 1px;
     border-radius: 4px;
+    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.25);
     padding: 4px;
     margin: 4px;
   }
 </style>
 
 <div class="row">
+  <QuoteForm on:quoteCreated={addQuote} on:quoteUpdated={updateQuote} {editingQuote} />
 </div>
 
 <div class="row">
-  <div>
-    {#if quotes.length === 0}
-      <h3>Loding quotes</h3>
-    {:else}
-      <div class="card-container">
-        {#each quotes as quote}
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">{quote.author}</h5>
-              <div class="quotes-container">
-                {#each quote.tags as tag}
-                  <span class="quote-tag">{tag}</span>
-                {/each}
-              </div>
-              <p class="card-text">{quote.text}</p>
-              <div class="card-action">
-                <a
-                  href="#"
-                  class="btn btn-outline-primary"
-                  on:click={() => editQuote(quote)}>
-                  Edit
-                </a>
-                <a
-                  href="#"
-                  class="btn btn-outline-danger"
-                  on:click={() => deleteQuote(quote)}>
-                  Delete
-                </a>
-              </div>
+  <div class="card-container">
+    {#each quotes as quote}
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">{quote.author}</h5>
+          <div class="quotes-container">
+            {#each quote.tags as tag}
+              <span class="quote-tag">{tag}</span>
+            {/each}
+          </div>
+          <p class="card-text">{quote.text}</p>
+          <div class="card-action">
+            <div
+              class="btn btn-outline-primary"
+              on:click={() => _editQuote(quote)}>
+              Edit
+            </div>
+            <div
+              class="btn btn-outline-danger"
+              on:click={() => _deleteQuote(quote.id)}>
+              Delete
             </div>
           </div>
-        {/each}
+        </div>
       </div>
-    {/if}
+    {/each}
   </div>
 </div>
