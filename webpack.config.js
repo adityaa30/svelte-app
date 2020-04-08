@@ -71,7 +71,7 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: './src/index.html',
-      title: 'Nostalgia'
+      title: 'Svelte App'
     }),
   ],
   devtool: prod ? false : 'source-map'

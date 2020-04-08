@@ -1,11 +1,15 @@
 <script>
-
+  import { Router, Link, Route } from "svelte-routing";
+  import Navbar from "./components/Navbar.svelte";
+  import About from "./components/About.svelte";
+  import Home from "./components/Home.svelte";
 </script>
 
-<style>
-  h1 {
-    color: pink;
-  }
-</style>
+<Router>
+  <Navbar />
 
-<h1>Hello Aditya :)</h1>
+  <div class="container">
+    <Route path="/" component={Home} />
+    <Route path="/about" component={About} />
+  </div>
+</Router>
